@@ -62,7 +62,7 @@ public:
   void display_trimix(float, float);
   void debug_float(float);
   void debug_int(int);
-  void debug_int16_t(int);
+  void debug_int16_t(int16_t);
 };
 
 #endif

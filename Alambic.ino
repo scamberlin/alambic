@@ -34,7 +34,7 @@ AlambicLcdDisplay lcd = AlambicLcdDisplay();
 void setup() {
   String Alambic_s = String(ALAMBIC_STRING);
   Serial.begin(_DEBUG_SERIAL);
-  while (!Serial); // wait for serial monitor on leonardo
+  while (!Serial); // wait for serial 
   lcd.version();
   EnvSensor es = EnvSensor();
   if (es.error()) {
