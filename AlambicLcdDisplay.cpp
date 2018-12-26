@@ -2,7 +2,7 @@
   Author
   ------
     Stephane Camberlin <stephane.camberlin@gmail.com> - 2018 (c)
-    
+
   License
   -------
     This program is free software: you can redistribute it and/or modify
@@ -20,166 +20,167 @@
 
 *****************************************************************************/
 
+/*
+Tests string alignment
+
+Normally strings are printed relative to the top left corner but this can be
+changed with the setTextDatum() function. The library has #defines for:
+
+TL_DATUM = Top left
+TC_DATUM = Top centre
+TR_DATUM = Top right
+ML_DATUM = Middle left
+MC_DATUM = Middle centre
+MR_DATUM = Middle right
+BL_DATUM = Bottom left
+BC_DATUM = Bottom centre
+BR_DATUM = Bottom right
+
+ */
+
 #include <stdlib.h>
-#include <LiquidCrystal.h>
-#include <SPI.h>
+#include <M5Stack.h>
+//#include <SPI.h>
 
 #include "AlambicLcdDisplay.h"
 #include "MixedGaz.h"
 
-/* initialize the LC library
- * with the LCD display
- * const int rs = 8,  en = 9,  d4 = 4, d5 = 5, d6 = 6, d7 = 7;
- */
-int rs = 8,  en = 9,  d4 = 4, d5 = 5, d6 = 6, d7 = 7;
-LiquidCrystal lc(rs, en, d4, d5, d6, d7);
-
 AlambicLcdDisplay::AlambicLcdDisplay(void) {
-  lc.begin(NUM_ROWS, NUM_COLS);
+  M5.begin();
+  M5.Lcd.fillScreen(TFT_GREY);
+  M5.Lcd.setTextPadding(40);
+  M5.Lcd.setTextDatum(MC_DATUM);
+  M5.Lcd.setTextColor(TFT_GREEN, TFT_GREY);
+  M5.Lcd.setFreeFont(FF18);
 }
 
 AlambicLcdDisplay::~AlambicLcdDisplay() {}
 
-void AlambicLcdDisplay::version() {  
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print(ALAMBIC_STRING);
-  lc.setCursor(0, 1);
-  lc.print("initializing...");
-  delay(DEFAULT_DELAY * 2);
+void AlambicLcdDisplay::clear() {
+  M5.Lcd.fillScreen(TFT_GREY);
 }
 
-void AlambicLcdDisplay::environment(float alt,float temp) {
+void AlambicLcdDisplay::version() {
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextPadding(40);
+  M5.Lcd.setTextColor(TFT_RED, TFT_GREY);
+  M5.Lcd.drawString(String(ALAMBIC_STRING), (int)(M5.Lcd.width()/2), 30, GFXFF);
+  M5.Lcd.setTextPadding(0);
+}
+
+void AlambicLcdDisplay::environment(float alt, float temp) {
   String temp_s = String("temp: " + String(temp) + " cel");
   String alt_s = String("alt: " + String(alt) + " m");
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print(temp_s);
-  lc.setCursor(0, 1);
-  lc.print(alt_s);
-  delay(DEFAULT_DELAY * 2);
 }
 
 void AlambicLcdDisplay::environment_error(void) {
   String temp_s = String("temp. :    error");
   String alt_s = String("alti. :    error");
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print(temp_s);
-  lc.setCursor(0, 1);
-  lc.print(alt_s);
-  delay(DEFAULT_DELAY * 2);
 }
 
 void AlambicLcdDisplay::calibrateStart() {
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print("calibrating...");
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextPadding(50);
+  M5.Lcd.setTextColor(TFT_GREEN, TFT_GREY);
+  M5.Lcd.drawString("calibrating...\n", 60, (int)(M5.Lcd.height()/2), GFXFF);
+  delay(DEFAULT_DELAY / 3);
 }
 
 void AlambicLcdDisplay::calibrateIterate(int i) {
   char timer[16];
-  sprintf(timer,"%0.1ds remaining", i);
-  lc.setCursor(0, 1);
-  lc.print(timer); 
+  sprintf(timer, "%.1ds remaining", i);
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_GREEN, TFT_GREY);
+  M5.Lcd.drawString(timer, 60, (int)(M5.Lcd.height()/2), GFXFF);
   delay(DEFAULT_DELAY);
 }
 
 void AlambicLcdDisplay::calibrateEnd() {
-  lc.setCursor(0, 1);
-  lc.print("                ");
-  lc.setCursor(0, 1);
-  lc.print("o2 sensor ok...");
-  delay(DEFAULT_DELAY);
-  lc.clear();
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_GREEN, TFT_GREY);
+  M5.Lcd.drawString("o2 sensor ok...\n", 60, (int)(M5.Lcd.height()/2), GFXFF);
+  M5.Lcd.setTextPadding(0);
+  delay(DEFAULT_DELAY / 3);
 }
 
-void AlambicLcdDisplay::display_nitrox(float fo2) {
-  static char outstr[15];
+void AlambicLcdDisplay::display_mix(float fo2) {
+  String mix = "unknown";
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_RED, TFT_GREY);
+  if (fo2 >= 20.00 && fo2 < 21.90) {
+    mix = String("air");
+    M5.Lcd.setTextColor(TFT_GREEN, TFT_GREY);
+  }
+  if (fo2 <= 16.00 && fo2 > 1.00) {
+    mix = String("hypoxic");
+    M5.Lcd.setTextColor(TFT_RED, TFT_GREY);
+  }
+  if (fo2 > 21.90) {
+    mix = String("nitrox");
+    M5.Lcd.setTextColor(TFT_BLUE, TFT_GREY);
+  }
+  String mix_s = String("gaz: " + String(mix));
+  M5.Lcd.setTextPadding(20);
+  M5.Lcd.drawString(mix_s, 80, 20, GFXFF);
+  M5.Lcd.setTextPadding(0);
+}
+
+void AlambicLcdDisplay::display_mod(float fo2) {
   float mod = MixedGaz().maximumOperatingDepth(fo2, MAX_PO2);
-  lc.setCursor(0, 0);
-  lc.print("O2 ");
-  lc.setCursor(2, 0);
-  dtostrf(fo2, 5, 1, outstr);
-  lc.print(outstr);
-  lc.setCursor(8, 0);
-  lc.print("MOD ");
-  lc.setCursor(11, 0);
-  dtostrf(mod, 5, 1, outstr);
-  lc.print(outstr);
+  String mod_s = String("mod: " + String(mod));
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_GREEN);
+  M5.Lcd.setTextPadding(20);
+  M5.Lcd.drawString(mod_s, 260, 20, GFXFF);
+  M5.Lcd.setTextPadding(0);
 }
 
-void AlambicLcdDisplay::display_mv(float mv, float cal_mv) {
-  static char outstr[15];
-  lc.setCursor(0, 1);
-  lc.print("MV ");
-  lc.setCursor(2, 1);
-  dtostrf(mv, 5, 2, outstr);
-  lc.print(outstr); 
-  lc.setCursor(8, 1);
-  lc.print("CAL ");
-  lc.setCursor(11, 1);
-  dtostrf(cal_mv, 5, 2, outstr);
-  lc.print(outstr);
+void AlambicLcdDisplay::display_fo2(float fo2) {
+  M5.Lcd.setTextColor(TFT_GREEN);
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextPadding(40);
+  String mod_s = String(String(fo2) + " / " + String(fhe));
+  M5.Lcd.drawString(mod_s, 160, 120, GFXFF);
+  M5.Lcd.setTextPadding(0);
+}
+
+void AlambicLcdDisplay::display_mv(float mv) {
+  String mv_s = String("mv: " + String(mv));
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_GREEN);
+  M5.Lcd.setTextPadding(20);
+  M5.Lcd.drawString(mv_s, 50, 220, GFXFF);
+  M5.Lcd.setTextPadding(0);
+}
+
+void AlambicLcdDisplay::display_cal(float cal_mv) {
+  String cal_mv_s = String("cal: " + String(cal_mv));
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextColor(TFT_GREEN);
+  M5.Lcd.setTextPadding(20);
+  M5.Lcd.drawString(cal_mv_s, 260, 220, GFXFF);
+  M5.Lcd.setTextPadding(0);
 }
 
 void AlambicLcdDisplay::display_trimix(float fo2, float fhe) {
   static char outstr[15];
   float mod = MixedGaz().maximumOperatingDepth(fo2, MAX_PO2);
   float end = MixedGaz().equivalentNarcoticDepth(mod, fhe);
-  lc.setCursor(0, 0);
-  lc.print("O2 ");
-  lc.setCursor(2, 0);
-  dtostrf(fo2, 5, 1, outstr);
-  lc.print(outstr);
-  lc.setCursor(8, 0);
-  lc.print("MOD ");
-  lc.setCursor(11, 0);
-  dtostrf(mod, 5, 1, outstr);
-  lc.print(outstr); 
-  lc.setCursor(0, 1);
-  lc.print("HE ");
-  lc.setCursor(2, 1);
-  dtostrf(fhe, 5, 1, outstr);
-  lc.print(outstr); 
-  lc.setCursor(8, 1);
-  lc.print("END ");
-  lc.setCursor(11, 1);
-  dtostrf(end, 5, 1, outstr);
-  lc.print(outstr);
+  M5.Lcd.clear(BLACK);
   delay(DEFAULT_DELAY);
 }
 
 void AlambicLcdDisplay::debug_int(int value) {
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print("value: ");
-  lc.setCursor(8, 0);
-  lc.print(value);
+  M5.Lcd.clear(BLACK);
   delay(DEFAULT_DELAY);
 }
 
 void AlambicLcdDisplay::debug_int16_t(int16_t value) {
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print("value: ");
-  lc.setCursor(8, 0);
-  lc.print(value);
+  M5.Lcd.clear(BLACK);
   delay(DEFAULT_DELAY);
 }
 
 void AlambicLcdDisplay::debug_float(float value) {
-  lc.begin(NUM_ROWS, NUM_COLS);
-  lc.clear();
-  lc.setCursor(0, 0);
-  lc.print("value: ");
-  lc.setCursor(8, 0);
-  lc.print(value);
+  M5.Lcd.clear(BLACK);
   delay(DEFAULT_DELAY);
 }

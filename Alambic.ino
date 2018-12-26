@@ -36,11 +36,11 @@ void setup() {
   Serial.begin(_DEBUG_SERIAL);
   while (!Serial); // wait for serial 
   lcd.version();
-  EnvSensor es = EnvSensor();
-  if (es.error()) {
-    lcd.environment_error();
-  } else 
-    lcd.environment(es.alt(), es.temp());
+  // EnvSensor es = EnvSensor();
+  // if (es.error()) {
+  //  lcd.environment_error();
+  // } else 
+  //  lcd.environment(es.alt(), es.temp());
   lcd.calibrateStart();
   O2Sensor o2s = O2Sensor();
   for (int i=DEFAULT_ITERATION ; i>0; i--) {
@@ -48,11 +48,16 @@ void setup() {
     lcd.calibrateIterate(i);
   }
   lcd.calibrateEnd();
+  lcd.clear(); 
 }
 
 void loop() {
-  O2Sensor o2s = O2Sensor();    
-  lcd.display_nitrox(o2s.currentFo2(o2s.avgTension()));
-  lcd.display_mv(o2s.avgTension(), o2s.calMv());
-  delay(DEFAULT_DELAY / 100);
+  O2Sensor o2s = O2Sensor();
+  float fo2 = (float) o2s.currentFo2(o2s.currentTension());
+  lcd.display_fo2(fo2);
+  lcd.display_mix(fo2);
+  lcd.display_mod(fo2);
+  lcd.display_mv(o2s.currentTension());
+  lcd.display_cal(o2s.calMv());
+  delay(DEFAULT_DELAY);
 }

@@ -38,10 +38,6 @@ Adafruit_ADS1115 _ads(ADS_ADDRESS); // construct an ads1115 at address 0x48
 #define RA_SIZE 20
 RunningAverage _adc(RA_SIZE);
 
-#ifndef O2_DEFAULT
-#define O2_DEFAULT 20.95
-#endif
-
 O2Sensor::O2Sensor(void)
 {
   /*
@@ -53,8 +49,9 @@ O2Sensor::O2Sensor(void)
   byte highByte = EEPROM.read(p_address + 1);
   _cal_adc = ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
   if (_cal_adc < 1000) {
-    _nDevices = scan_i2c_bus();
-    _cal_adc = calibrate();
+    Serial.print("dump _cal_adc : " + String(_cal_adc));
+    //_nDevices = scan_i2c_bus();
+    //_cal_adc = calibrate();
   }
 }
 
@@ -97,16 +94,14 @@ int O2Sensor::scan_i2c_bus() {
   return (int) nDevices;
 }
 
-
 /*
  *  read o2 sensor and add value in RunningAverage o2
  */
 int16_t O2Sensor::readADC() {
-  int adc = _ads.readADC_Differential_0_1();
+  int adc = abs(_ads.readADC_Differential_0_1());
   _adc.addValue(adc);
   return adc;
 }
-
 
 /*
  *  calibrate O2 sensor
@@ -116,7 +111,7 @@ int O2Sensor::calibrate() {
     readADC();
     delay(100);
   }
-  int p_value = abs(_adc.getAverage());
+  int p_value = _adc.getAverage();
   byte lowByte = ((p_value >> 0) & 0xFF);
   byte highByte = ((p_value >> 8) & 0xFF);
   EEPROM.write(p_address, lowByte);
@@ -130,16 +125,16 @@ float O2Sensor::calMv() {
 
 float O2Sensor::avgTension() {
   readADC();
-  return (float) abs(_adc.getAverage() * _gain);
+  return (float) (_adc.getAverage() * _gain);
 }
 
 float O2Sensor::currentTension() {
-  return (float) abs(readADC() * _gain);
+  return (float) (readADC() * _gain);
 }
 
 float O2Sensor::currentFo2(float mv) {
-  float fo2 = (abs(mv) / (_cal_adc * _gain)) * O2_DEFAULT;
-  if (abs(mv) <= 0.1) fo2 = 0;
+  float fo2 = (mv / (_cal_adc * _gain)) * O2_DEFAULT;
+  if (mv <= 0.1) fo2 = 0;
   if (fo2 > 99.9) fo2 = 99.9;
   return (fo2);
 }

@@ -35,6 +35,10 @@
 #define MAX_O2_SENSOR_MV 13.0
 #endif
 
+#ifndef O2_DEFAULT
+#define O2_DEFAULT 20.95
+#endif
+
 /* Adafruit_ADS1115 ads(0x48);
  * 0x48 (1001000) ADR -> GND
  * 0x49 (1001001) ADR -> VDD

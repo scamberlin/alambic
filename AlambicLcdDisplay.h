@@ -30,13 +30,19 @@
 #define ALAMBIC_STRING "Alambic v0.1"
 #endif
 
-#ifndef NUM_ROWS
-#define NUM_ROWS 2
-#endif
 
-#ifndef NUM_COLS
-#define NUM_COLS 16
-#endif
+/* Custom are fonts added to library "TFT_eSPI\Fonts\Custom" folder
+ * a #include must also be added to the "User_Custom_Fonts.h" file
+ * in the "TFT_eSPI\User_Setups" folder. See example entries.
+ */
+#define FF18    &FreeSans12pt7b 
+#define CF_OL24 &Orbitron_Light_24
+#define CF_OL32 &Orbitron_Light_32
+#define CF_RT24 &Roboto_Thin_24
+#define CF_S24  &Satisfy_24
+#define CF_Y32  &Yellowtail_32
+
+#define GFXFF 1
 
 #ifndef DEFAULT_DELAY
 #define DEFAULT_DELAY 1000
@@ -46,9 +52,12 @@
 #define DEFAULT_ITERATION 1
 #endif
 
+#define TFT_GREY 0x5AEB // New colour
+
 class AlambicLcdDisplay
 {
 public:
+  const float fhe = 0.00;
   AlambicLcdDisplay(void);
   ~AlambicLcdDisplay();
   void version();
@@ -57,8 +66,12 @@ public:
   void calibrateStart();
   void calibrateIterate(int);
   void calibrateEnd();
-  void display_nitrox(float);
-  void display_mv(float, float);
+  void clear();
+  void display_fo2(float);
+  void display_mix(float);
+  void display_mod(float);
+  void display_mv(float);
+  void display_cal(float);
   void display_trimix(float, float);
   void debug_float(float);
   void debug_int(int);
