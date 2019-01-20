@@ -74,7 +74,6 @@ public:
   O2Sensor(void);
   ~O2Sensor();
 
-  int scan_i2c_bus();
   int16_t readADC();
   int calibrate();
   float currentTension();
@@ -92,15 +91,9 @@ protected:
   
   float _min_mv = MIN_O2_SENSOR_MV;
   float _max_mv = MAX_O2_SENSOR_MV;
-  float _cal_adc = 0.00;
   float _gain = GAIN;
-  float _result_max = 0;
-
-  byte _ads1115[4] = {};
-  int _nDevices;
-  
-  private:
-    int p_address = 0;
+  int p_address = 0;
+  int _cal_adc;    
 
 };
 

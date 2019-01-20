@@ -24,6 +24,7 @@
 
 #include "MixedGaz.h"
 #include "O2Sensor.h"
+#include "MD62Sensor.h"
 #include "EnvSensor.h"
 #include "AlambicLcdDisplay.h"
 
@@ -43,8 +44,10 @@ void setup() {
   //  lcd.environment(es.alt(), es.temp());
   lcd.calibrateStart();
   O2Sensor o2s = O2Sensor();
+  MD62Sensor md62s = MD62Sensor();
   for (int i=DEFAULT_ITERATION ; i>0; i--) {
     o2s.calibrate(); 
+    md62s.calibrate();
     lcd.calibrateIterate(i);
   }
   lcd.calibrateEnd();
@@ -53,7 +56,10 @@ void setup() {
 
 void loop() {
   O2Sensor o2s = O2Sensor();
+  MD62Sensor md62s = MD62Sensor();
+  lcd.clear();
   float fo2 = (float) o2s.currentFo2(o2s.currentTension());
+  float fhe = (float) md62s.currentFhe(md62s.currentTension());
   lcd.display_fo2(fo2);
   lcd.display_mix(fo2);
   lcd.display_mod(fo2);

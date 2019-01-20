@@ -121,7 +121,7 @@ void AlambicLcdDisplay::display_mix(float fo2) {
   }
   String mix_s = String("gaz: " + String(mix));
   M5.Lcd.setTextPadding(20);
-  M5.Lcd.drawString(mix_s, 80, 20, GFXFF);
+  M5.Lcd.drawString(mix_s, 50, 20, GFXFF);
   M5.Lcd.setTextPadding(0);
 }
 

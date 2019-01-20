@@ -1,8 +1,9 @@
 /*****************************************************************************
   Author
   ------
-    Stephane Camberlin <stephane.camberlin@gmail.com> - 2018 (c)
-    Freely inspired from ej's o2 oled analyzer - v0.21 - http://ejlabs.net/arduino-oled-nitrox-analyzer
+    Stephane Camberlin <stephane.camberlin@gmail.com> (c) 2018
+    Freely inspired from ej's o2 oled analyzer - v0.21
+    http://ejlabs.net/arduino-oled-nitrox-analyzer
     
   License
   -------
@@ -45,13 +46,11 @@ O2Sensor::O2Sensor(void)
    */
   _ads.setGain(GAIN_SIXTEEN);
   _ads.begin();
-  byte lowByte = EEPROM.read(p_address);
-  byte highByte = EEPROM.read(p_address + 1);
-  _cal_adc = ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
-  if (_cal_adc < 1000) {
-    Serial.print("dump _cal_adc : " + String(_cal_adc));
-    //_nDevices = scan_i2c_bus();
-    //_cal_adc = calibrate();
+  EEPROM.get(p_address, _cal_adc);
+  //Serial.println("o2_cal_val : " + String(_cal_adc));
+  Serial.println("O2Sensor.O2Sensor._cal_adc : " + String(_cal_adc));
+  if (_cal_adc < 100) {
+    _cal_adc = calibrate();
   }
 }
 
@@ -60,47 +59,14 @@ O2Sensor::~O2Sensor() {}
 boolean O2Sensor::error() { return _error; }
 String O2Sensor::errorStr() { return _errorStr; }
 
-int O2Sensor::scan_i2c_bus() {
-  byte error, address;
-  int nDevices = 0;
-  static size_t arrayIndex = 0;  
-  Wire.begin();
-  Serial.println("Scanning i2c bus for Adafruit ADS1115.");
-  for(address = 1; address < 127; address++ ) {
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
-    if (error == 0) {
-      Serial.print("I2C device found at address 0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.print(address,HEX);
-      Serial.print(".\n");
-      nDevices++;
-      if (address != 0)
-        _ads1115[ arrayIndex++ ] = (byte) address;
-    } else if (error==4) {
-      Serial.print("Unknown error at address 0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.print(address,HEX);
-      Serial.print(".\n");
-      return 0;
-    }
-  }
-  if (nDevices == 0) {
-    Serial.println("No I2C devices found.\n");
-    return 0;
-  }
-  return (int) nDevices;
-}
 
 /*
  *  read o2 sensor and add value in RunningAverage o2
  */
 int16_t O2Sensor::readADC() {
-  int adc = abs(_ads.readADC_Differential_0_1());
-  _adc.addValue(adc);
-  return adc;
+  int16_t o2_val = abs(_ads.readADC_Differential_0_1());
+  Serial.println("O2Sensor.readADC.o2_val : " + String(o2_val));
+  return o2_val;
 }
 
 /*
@@ -108,27 +74,28 @@ int16_t O2Sensor::readADC() {
  */
 int O2Sensor::calibrate() {
   for (int cx = 1; cx <= RA_SIZE; cx++) {
-    readADC();
+    _adc.addValue(readADC());
     delay(100);
   }
   int p_value = _adc.getAverage();
-  byte lowByte = ((p_value >> 0) & 0xFF);
-  byte highByte = ((p_value >> 8) & 0xFF);
-  EEPROM.write(p_address, lowByte);
-  EEPROM.write(p_address + 1, highByte);
+  Serial.println("O2Sensor.calibrate.p_value : " + String(p_value));
+  EEPROM.put(p_address, p_value);
   return p_value;
 }
 
 float O2Sensor::calMv() { 
+  Serial.println("O2Sensor.calMv.cal_mv : " + String(_cal_adc * _gain));
   return (_cal_adc * _gain); 
 }
 
 float O2Sensor::avgTension() {
   readADC();
+  Serial.println("O2Sensor.avgTension.avg_mv : " + String(_adc.getAverage() * _gain));
   return (float) (_adc.getAverage() * _gain);
 }
 
 float O2Sensor::currentTension() {
+  Serial.println("O2Sensor.currentTension.cur_mv : " + String(readADC() * _gain));
   return (float) (readADC() * _gain);
 }
 
@@ -136,5 +103,6 @@ float O2Sensor::currentFo2(float mv) {
   float fo2 = (mv / (_cal_adc * _gain)) * O2_DEFAULT;
   if (mv <= 0.1) fo2 = 0;
   if (fo2 > 99.9) fo2 = 99.9;
+  Serial.println("O2Sensor.currentFo2.fo2 : " + String(fo2));
   return (fo2);
 }
