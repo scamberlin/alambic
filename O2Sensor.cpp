@@ -64,9 +64,9 @@ String O2Sensor::errorStr() { return _errorStr; }
  *  read o2 sensor and add value in RunningAverage o2
  */
 int16_t O2Sensor::readADC() {
-  int16_t o2_val = abs(_ads.readADC_Differential_0_1());
-  Serial.println("O2Sensor.readADC.o2_val : " + String(o2_val));
-  return o2_val;
+  int16_t o2s = abs(_ads.readADC_Differential_0_1());
+  Serial.println("O2Sensor.readADC.o2s : " + String(o2s));
+  return o2s;
 }
 
 /*
@@ -75,7 +75,7 @@ int16_t O2Sensor::readADC() {
 int O2Sensor::calibrate() {
   for (int cx = 1; cx <= RA_SIZE; cx++) {
     _adc.addValue(readADC());
-    delay(100);
+    delay(200);
   }
   int p_value = _adc.getAverage();
   Serial.println("O2Sensor.calibrate.p_value : " + String(p_value));

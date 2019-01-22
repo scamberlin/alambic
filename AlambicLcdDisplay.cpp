@@ -139,7 +139,7 @@ void AlambicLcdDisplay::display_fo2(float fo2) {
   M5.Lcd.setTextColor(TFT_GREEN);
   M5.Lcd.setFreeFont(FF18);
   M5.Lcd.setTextPadding(40);
-  String mod_s = String(String(fo2) + " / " + String(fhe));
+  String mod_s = String(String(fo2) + " / " + String(0.00));
   M5.Lcd.drawString(mod_s, 160, 120, GFXFF);
   M5.Lcd.setTextPadding(0);
 }
@@ -163,11 +163,12 @@ void AlambicLcdDisplay::display_cal(float cal_mv) {
 }
 
 void AlambicLcdDisplay::display_trimix(float fo2, float fhe) {
-  static char outstr[15];
-  float mod = MixedGaz().maximumOperatingDepth(fo2, MAX_PO2);
-  float end = MixedGaz().equivalentNarcoticDepth(mod, fhe);
-  M5.Lcd.clear(BLACK);
-  delay(DEFAULT_DELAY);
+  M5.Lcd.setTextColor(TFT_GREEN);
+  M5.Lcd.setFreeFont(FF18);
+  M5.Lcd.setTextPadding(40);
+  String mod_s = String(String(fo2) + " / " + String(fhe));
+  M5.Lcd.drawString(mod_s, 160, 120, GFXFF);
+  M5.Lcd.setTextPadding(0);
 }
 
 void AlambicLcdDisplay::debug_int(int value) {

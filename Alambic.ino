@@ -21,6 +21,8 @@
 *****************************************************************************/
 
 #include <Wire.h>
+#include <M5ez.h>
+#include <ezTime.h>
 
 #include "MixedGaz.h"
 #include "O2Sensor.h"
@@ -29,8 +31,10 @@
 #include "AlambicLcdDisplay.h"
 
 #define _DEBUG_SERIAL 9600
+#define MAIN_DECLARED
 
 AlambicLcdDisplay lcd = AlambicLcdDisplay();
+
 
 void setup() {
   String Alambic_s = String(ALAMBIC_STRING);
@@ -60,7 +64,7 @@ void loop() {
   lcd.clear();
   float fo2 = (float) o2s.currentFo2(o2s.currentTension());
   float fhe = (float) md62s.currentFhe(md62s.currentTension());
-  lcd.display_fo2(fo2);
+  lcd.display_trimix(fo2, fhe);
   lcd.display_mix(fo2);
   lcd.display_mod(fo2);
   lcd.display_mv(o2s.currentTension());

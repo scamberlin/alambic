@@ -57,7 +57,6 @@
 class AlambicLcdDisplay
 {
 public:
-  const float fhe = 0.00;
   AlambicLcdDisplay(void);
   ~AlambicLcdDisplay();
   void version();
