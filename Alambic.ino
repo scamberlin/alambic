@@ -30,7 +30,7 @@
 #include "EnvSensor.h"
 #include "AlambicLcdDisplay.h"
 
-#define _DEBUG_SERIAL 9600
+#define _DEBUG_SERIAL 115200
 #define MAIN_DECLARED
 
 AlambicLcdDisplay lcd = AlambicLcdDisplay();
